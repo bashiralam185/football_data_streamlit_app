@@ -2,11 +2,13 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import pickle
+import numpy as np
 
-# Load Data (Assuming 'df' is preloaded with the dataset)
+# Load Data 
 @st.cache_data
 def load_data():
-    df = pd.read_csv("matches.csv")  # Replace with actual file path
+    df = pd.read_csv("matches.csv")  
     return df
 
 df = load_data()
@@ -19,10 +21,14 @@ def preprocess_data(df):
     return df
 
 df = preprocess_data(df)
-
 # Sidebar for Top Teams Selection
 st.sidebar.title("Filters")
 top_n = st.sidebar.slider("Select Top N Teams", 5, 20, 10)
+
+# Create a mapping for teams
+teams = list(set(df['team1']).union(set(df['team2'])))  # Get unique team names
+team_mapping = {team: idx for idx, team in enumerate(teams)}
+
 
 # Create the graphs for analysis
 graphs = [
@@ -34,6 +40,74 @@ graphs = [
     ("Teams Creating Most Chances", px.bar(df.groupby('team1')['chances1'].sum().nlargest(top_n).reset_index(), x='team1', y='chances1', title="Most Chances Created")),
     ("Teams Conceding Most Goals", px.bar(df.groupby('team2')['score1'].sum().nlargest(top_n).reset_index(), x='team2', y='score1', title="Most Goals Conceded"))
 ]
+
+
+# Load the model and team mapping
+@st.cache_data
+def load_model():
+    with open("model.pkl", "rb") as f:  
+        model = pickle.load(f)
+
+    return model
+model = load_model()
+
+# Function to predict the match outcome
+def predict_match(team1, team2, stage, model, team_mapping):
+    if team1 not in team_mapping or team2 not in team_mapping:
+        return "Invalid team name!"
+
+    team1_encoded = team_mapping[team1]
+    team2_encoded = team_mapping[team2]
+    stage_encoded = stage  
+
+    input_data = np.array([[team1_encoded, team2_encoded, stage_encoded, 2025]])  
+    probabilities = model.predict_proba(input_data)[0]
+    return probabilities
+
+############################################## Side Bar Content ##############################################
+# Add a horizontal line
+st.sidebar.markdown("---")
+# Streamlit UI for match prediction
+st.sidebar.subheader("Match Prediction - UEFA Champions League")
+
+# Select teams and round
+team1 = st.sidebar.selectbox("Select Team 1 (Home Game):", df['team1'].unique())
+team2 = st.sidebar.selectbox("Select Team 2 (Away Game):", df['team1'].unique())
+round = st.sidebar.selectbox("Select Round:", ["Group Stage", "Semifinals", "Quarter"])  # Add more rounds as needed
+
+if round == "Group Stage":
+    round_encoded = 1
+elif round == "Knockout":
+    round_encoded = 2
+elif round == "Quarter":
+    round_encoded = 3
+elif round == "Semifinals":
+    round_encoded = 4
+
+# When the user clicks the button, predict the match outcome
+if st.sidebar.button("Predict Match Outcome"):
+    prediction = predict_match(team1, team2, round_encoded, model, team_mapping)
+
+    
+    # Display the pie chart for the prediction
+    win_prob = prediction[0]
+    lose_prob = prediction[1]
+
+        # Create the Pie chart
+    fig = go.Figure(data=[go.Pie(
+            labels=[team1, team2],
+            values=[win_prob, lose_prob],
+            hole=0.3,
+            hoverinfo="label+percent",
+            textinfo="label+percent"
+        )])
+
+    fig.update_layout(title=f"Win Probability for {team1} vs {team2} ({round})")
+    st.sidebar.plotly_chart(fig, use_container_width=True)
+
+
+
+#################################### Main Page Content ###################################
 
 st.title("UEFA Champions League Dashboard")
 
@@ -113,7 +187,6 @@ team_stats_df = pd.DataFrame({
 st.header(f"Statistics for {team_name}")
 st.table(team_stats_df)
 
-# **Visualizations:**
 # Create two columns to display visualizations
 col3, col4 = st.columns(2)
 
