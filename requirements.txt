@@ -12,7 +12,6 @@ ansi2html==1.8.0
 anyio==3.6.2
 anytree==2.12.1
 appdirs==1.4.4
-apturl==0.5.2
 argcomplete==3.5.1
 argon2-cffi==21.3.0
 argon2-cffi-bindings==21.2.0
