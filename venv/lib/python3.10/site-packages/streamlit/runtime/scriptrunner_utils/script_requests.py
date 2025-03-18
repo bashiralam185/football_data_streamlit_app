@@ -1,4 +1,4 @@
-# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2024)
+# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2025)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,11 +17,15 @@ from __future__ import annotations
 import threading
 from dataclasses import dataclass, field, replace
 from enum import Enum
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 from streamlit import util
+from streamlit.proto.Common_pb2 import ChatInputValue as ChatInputValueProto
 from streamlit.proto.Common_pb2 import StringTriggerValue as StringTriggerValueProto
 from streamlit.proto.WidgetStates_pb2 import WidgetState, WidgetStates
+
+if TYPE_CHECKING:
+    from streamlit.proto.ClientState_pb2 import ContextInfo
 
 
 class ScriptRequestType(Enum):
@@ -52,7 +56,10 @@ class RerunData:
     # The queue of fragment_ids waiting to be run.
     fragment_id_queue: list[str] = field(default_factory=list)
     is_fragment_scoped_rerun: bool = False
+    # set to true when a script is rerun by the fragment auto-rerun mechanism
     is_auto_rerun: bool = False
+    # context_info is used to store information from the user browser (e.g. timezone)
+    context_info: ContextInfo | None = None
 
     def __repr__(self) -> str:
         return util.repr_(self)
@@ -115,6 +122,7 @@ def _coalesce_widget_states(
     trigger_value_types = [
         ("trigger_value", False),
         ("string_trigger_value", StringTriggerValueProto(data=None)),
+        ("chat_input_value", ChatInputValueProto(data=None)),
     ]
     for old_state in old_states.widgets:
         for trigger_value_type, unset_value in trigger_value_types:
@@ -230,6 +238,7 @@ class ScriptRequests:
                     fragment_id_queue=fragment_id_queue,
                     is_fragment_scoped_rerun=new_data.is_fragment_scoped_rerun,
                     is_auto_rerun=new_data.is_auto_rerun,
+                    context_info=new_data.context_info,
                 )
 
                 return True

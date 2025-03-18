@@ -1,4 +1,4 @@
-# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2024)
+# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2025)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta, timezone, tzinfo
 from numbers import Integral, Real
@@ -22,9 +23,6 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Final,
-    List,
-    Sequence,
-    Tuple,
     TypeVar,
     Union,
     cast,
@@ -65,16 +63,16 @@ SliderNumericT = TypeVar("SliderNumericT", int, float)
 SliderDatelikeT = TypeVar("SliderDatelikeT", date, time, datetime)
 
 SliderNumericSpanT: TypeAlias = Union[
-    List[SliderNumericT],
-    Tuple[()],
-    Tuple[SliderNumericT],
-    Tuple[SliderNumericT, SliderNumericT],
+    list[SliderNumericT],
+    tuple[()],
+    tuple[SliderNumericT],
+    tuple[SliderNumericT, SliderNumericT],
 ]
 SliderDatelikeSpanT: TypeAlias = Union[
-    List[SliderDatelikeT],
-    Tuple[()],
-    Tuple[SliderDatelikeT],
-    Tuple[SliderDatelikeT, SliderDatelikeT],
+    list[SliderDatelikeT],
+    tuple[()],
+    tuple[SliderDatelikeT],
+    tuple[SliderDatelikeT, SliderDatelikeT],
 ]
 
 StepNumericT: TypeAlias = SliderNumericT
@@ -96,8 +94,8 @@ SliderValue: TypeAlias = Union[
 ]
 SliderReturnGeneric: TypeAlias = Union[
     SliderValueT,
-    Tuple[SliderValueT],
-    Tuple[SliderValueT, SliderValueT],
+    tuple[SliderValueT],
+    tuple[SliderValueT, SliderValueT],
 ]
 SliderReturn: TypeAlias = Union[
     SliderReturnGeneric[int],
@@ -417,19 +415,31 @@ class SliderMixin:
         format : str or None
             A printf-style format string controlling how the interface should
             display numbers. This does not impact the return value.
-            Formatter for int/float supports: %d %e %f %g %i
-            Formatter for date/time/datetime uses Moment.js notation:
-            https://momentjs.com/docs/#/displaying/format/
+
+            For information about formatting integers and floats, see
+            `sprintf.js
+            <https://github.com/alexei/sprintf.js?tab=readme-ov-file#format-specification>`_.
+            For example, ``format="%0.1f"`` adjusts the displayed decimal
+            precision to only show one digit after the decimal.
+
+            For information about formatting datetimes, dates, and times, see
+            `momentJS <https://momentjs.com/docs/#/displaying/format/>`_.
+            For example, ``format="ddd ha"`` adjusts the displayed datetime to
+            show the day of the week and the hour ("Tue 8pm").
 
         key : str or int
             An optional string or integer to use as the unique key for the widget.
             If this is omitted, a key will be generated for the widget
             based on its content. No two widgets may have the same key.
 
-        help : str
-            An optional tooltip that gets displayed next to the widget label.
-            Streamlit only displays the tooltip when
-            ``label_visibility="visible"``.
+        help : str or None
+            A tooltip that gets displayed next to the widget label. Streamlit
+            only displays the tooltip when ``label_visibility="visible"``. If
+            this is ``None`` (default), no tooltip is displayed.
+
+            The tooltip can optionally contain GitHub-flavored Markdown,
+            including the Markdown directives described in the ``body``
+            parameter of ``st.markdown``.
 
         on_change : callable
             An optional callback invoked when this slider's value changes.

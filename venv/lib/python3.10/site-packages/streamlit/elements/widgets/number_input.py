@@ -1,4 +1,4 @@
-# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2024)
+# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2025)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -240,8 +240,9 @@ class NumberInputMixin:
         format : str or None
             A printf-style format string controlling how the interface should
             display numbers. The output must be purely numeric. This does not
-            impact the return value of the widget. Formatting is handled by
-            `sprintf.js <https://github.com/alexei/sprintf.js>`_.
+            impact the return value of the widget. For more information about
+            the formatting specification, see `sprintf.js
+            <https://github.com/alexei/sprintf.js?tab=readme-ov-file#format-specification>`_.
 
             For example, ``format="%0.1f"`` adjusts the displayed decimal
             precision to only show one digit after the decimal.
@@ -251,10 +252,14 @@ class NumberInputMixin:
             If this is omitted, a key will be generated for the widget
             based on its content. No two widgets may have the same key.
 
-        help : str
-            An optional tooltip that gets displayed next to the widget label.
-            Streamlit only displays the tooltip when
-            ``label_visibility="visible"``.
+        help : str or None
+            A tooltip that gets displayed next to the widget label. Streamlit
+            only displays the tooltip when ``label_visibility="visible"``. If
+            this is ``None`` (default), no tooltip is displayed.
+
+            The tooltip can optionally contain GitHub-flavored Markdown,
+            including the Markdown directives described in the ``body``
+            parameter of ``st.markdown``.
 
         on_change : callable
             An optional callback invoked when this number_input's value changes.
