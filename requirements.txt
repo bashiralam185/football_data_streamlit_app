@@ -4,4 +4,3 @@ plotly
 numpy
 matplotlib
 pickle
-scikit-learn
