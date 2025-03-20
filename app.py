@@ -2,7 +2,8 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-import pickle
+import joblib
+
 
 # Load Data 
 @st.cache_data
@@ -42,8 +43,7 @@ graphs = [
 # Load the model and team mapping
 @st.cache_data
 def load_model():
-    with open("model.pkl", "rb") as f:  
-        model = pickle.load(f)
+    model = joblib.load("model.joblib")
     return model
 
 model = load_model()
