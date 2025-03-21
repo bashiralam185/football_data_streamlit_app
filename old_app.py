@@ -2,8 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-import pickle
-import numpy as np
+
 
 # Load Data 
 @st.cache_data
@@ -42,68 +41,68 @@ graphs = [
 ]
 
 
-# Load the model and team mapping
-@st.cache_data
-def load_model():
-    with open("model.pkl", "rb") as f:  
-        model = pickle.load(f)
+# # Load the model and team mapping
+# @st.cache_data
+# def load_model():
+#     with open("model.pkl", "rb") as f:  
+#         model = pickle.load(f)
 
-    return model
-model = load_model()
+#     return model
+# model = load_model()
 
-# Function to predict the match outcome
-def predict_match(team1, team2, stage, model, team_mapping):
-    if team1 not in team_mapping or team2 not in team_mapping:
-        return "Invalid team name!"
+# # Function to predict the match outcome
+# def predict_match(team1, team2, stage, model, team_mapping):
+#     if team1 not in team_mapping or team2 not in team_mapping:
+#         return "Invalid team name!"
 
-    team1_encoded = team_mapping[team1]
-    team2_encoded = team_mapping[team2]
-    stage_encoded = stage  
+#     team1_encoded = team_mapping[team1]
+#     team2_encoded = team_mapping[team2]
+#     stage_encoded = stage  
 
-    input_data = np.array([[team1_encoded, team2_encoded, stage_encoded, 2025]])  
-    probabilities = model.predict_proba(input_data)[0]
-    return probabilities
+#     input_data = np.array([[team1_encoded, team2_encoded, stage_encoded, 2025]])  
+#     probabilities = model.predict_proba(input_data)[0]
+#     return probabilities
 
 ############################################## Side Bar Content ##############################################
 # Add a horizontal line
 st.sidebar.markdown("---")
-# Streamlit UI for match prediction
-st.sidebar.subheader("Match Prediction - UEFA Champions League")
+# # Streamlit UI for match prediction
+# st.sidebar.subheader("Match Prediction - UEFA Champions League")
 
-# Select teams and round
-team1 = st.sidebar.selectbox("Select Team 1 (Home Game):", df['team1'].unique())
-team2 = st.sidebar.selectbox("Select Team 2 (Away Game):", df['team1'].unique())
-round = st.sidebar.selectbox("Select Round:", ["Group Stage", "Semifinals", "Quarter"])  # Add more rounds as needed
+# # Select teams and round
+# team1 = st.sidebar.selectbox("Select Team 1 (Home Game):", df['team1'].unique())
+# team2 = st.sidebar.selectbox("Select Team 2 (Away Game):", df['team1'].unique())
+# round = st.sidebar.selectbox("Select Round:", ["Group Stage", "Semifinals", "Quarter"])  # Add more rounds as needed
 
-if round == "Group Stage":
-    round_encoded = 1
-elif round == "Knockout":
-    round_encoded = 2
-elif round == "Quarter":
-    round_encoded = 3
-elif round == "Semifinals":
-    round_encoded = 4
+# if round == "Group Stage":
+#     round_encoded = 1
+# elif round == "Knockout":
+#     round_encoded = 2
+# elif round == "Quarter":
+#     round_encoded = 3
+# elif round == "Semifinals":
+#     round_encoded = 4
 
-# When the user clicks the button, predict the match outcome
-if st.sidebar.button("Predict Match Outcome"):
-    prediction = predict_match(team1, team2, round_encoded, model, team_mapping)
+# # When the user clicks the button, predict the match outcome
+# if st.sidebar.button("Predict Match Outcome"):
+#     prediction = predict_match(team1, team2, round_encoded, model, team_mapping)
 
     
-    # Display the pie chart for the prediction
-    win_prob = prediction[0]
-    lose_prob = prediction[1]
+#     # Display the pie chart for the prediction
+#     win_prob = prediction[0]
+#     lose_prob = prediction[1]
 
-        # Create the Pie chart
-    fig = go.Figure(data=[go.Pie(
-            labels=[team1, team2],
-            values=[win_prob, lose_prob],
-            hole=0.3,
-            hoverinfo="label+percent",
-            textinfo="label+percent"
-        )])
+#         # Create the Pie chart
+#     fig = go.Figure(data=[go.Pie(
+#             labels=[team1, team2],
+#             values=[win_prob, lose_prob],
+#             hole=0.3,
+#             hoverinfo="label+percent",
+#             textinfo="label+percent"
+#         )])
 
-    fig.update_layout(title=f"Win Probability for {team1} vs {team2} ({round})")
-    st.sidebar.plotly_chart(fig, use_container_width=True)
+#     fig.update_layout(title=f"Win Probability for {team1} vs {team2} ({round})")
+#     st.sidebar.plotly_chart(fig, use_container_width=True)
 
 
 
